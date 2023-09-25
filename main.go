@@ -17,7 +17,14 @@ var (
 	running  = true
 	bkgColor = rl.NewColor(147, 211, 196, 255)
 
+	texture      = rl.Texture2D{}
 	grassSprite  = rl.Texture2D{}
+	hillSprite   = rl.Texture2D{}
+	fenceSprite  = rl.Texture2D{}
+	houseSprite  = rl.Texture2D{}
+	waterSprite  = rl.Texture2D{}
+	tilledSprite = rl.Texture2D{}
+
 	playerSprite = rl.Texture2D{}
 
 	playerSrc                                     rl.Rectangle
@@ -35,7 +42,7 @@ var (
 	srcMap     []string
 	mapW, mapH int
 
-	playerSpeed float32 = 3
+	playerSpeed float32 = 1.4
 
 	cam rl.Camera2D
 )
@@ -47,10 +54,35 @@ func drawScene() {
 			tileDest.X = tileDest.Width * float32(i%mapW)
 			tileDest.Y = tileDest.Height * float32(i/mapW)
 
-			tileSrc.X = tileSrc.Width * float32((tileMap[i]-1)%int(grassSprite.Width/int32(tileSrc.Width)))
-			tileSrc.Y = tileSrc.Height * float32((tileMap[i]-1)/int(grassSprite.Width/int32(tileSrc.Width)))
+			if srcMap[i] == "g" {
+				texture = grassSprite
+			}
+			if srcMap[i] == "l" {
+				texture = hillSprite
+			}
+			if srcMap[i] == "f" {
+				texture = fenceSprite
+			}
+			if srcMap[i] == "h" {
+				texture = houseSprite
+			}
+			if srcMap[i] == "w" {
+				texture = waterSprite
+			}
+			if srcMap[i] == "t" {
+				texture = tilledSprite
+			}
 
-			rl.DrawTexturePro(grassSprite, tileSrc, tileDest, rl.NewVector2(tileDest.Width, tileDest.Height), 0, rl.White)
+			if srcMap[i] == "h" || srcMap[i] == "f" {
+				tileSrc.X = 0
+				tileSrc.Y = 0
+				rl.DrawTexturePro(grassSprite, tileSrc, tileDest, rl.NewVector2(tileDest.Width, tileDest.Height), 0, rl.White)
+			}
+
+			tileSrc.X = tileSrc.Width * float32((tileMap[i]-1)%int(texture.Width/int32(tileSrc.Width)))
+			tileSrc.Y = tileSrc.Height * float32((tileMap[i]-1)/int(texture.Width/int32(tileSrc.Width)))
+
+			rl.DrawTexturePro(texture, tileSrc, tileDest, rl.NewVector2(tileDest.Width, tileDest.Height), 0, rl.White)
 		}
 	}
 	rl.DrawTexturePro(playerSprite, playerSrc, playerDest, rl.NewVector2(playerDest.Width, playerDest.Height), 0, rl.White)
@@ -77,6 +109,12 @@ func input() {
 		playerMoving = true
 		playerDir = 3
 		playerRight = true
+	}
+	if rl.IsKeyDown(rl.KeyLeftShift) {
+		playerSpeed = 3
+	}
+	if !rl.IsKeyDown(rl.KeyLeftShift) {
+		playerSpeed = 1.4
 	}
 }
 
@@ -147,15 +185,14 @@ func loadMap(mapFile string) {
 	for i := 0; i < len(sliced); i++ {
 		s, _ := strconv.ParseInt(sliced[i], 10, 64)
 		m := int(s)
-		fmt.Println("m value: ", m)
 		if mapW == -1 {
-			mapW = m
-			fmt.Println("mw is: ", mapW)
+			mapW = 26
 		} else if mapH == -1 {
-			mapH = m
-			fmt.Println("mh is: ", mapH)
-		} else {
+			mapH = 16
+		} else if i < mapW*mapH+2 {
 			tileMap = append(tileMap, m)
+		} else {
+			srcMap = append(srcMap, sliced[i])
 		}
 	}
 
@@ -178,17 +215,22 @@ func initializing() {
 	rl.SetTargetFPS(60)
 
 	grassSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Grass.png")
+	hillSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Hills.png")
+	fenceSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Fences.png")
+	houseSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Wooden House.png")
+	waterSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Water.png")
+	tilledSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Tilled Dirt.png")
 
-	tileDest = rl.NewRectangle(0, 0, 32, 32)
+	tileDest = rl.NewRectangle(0, 0, 16, 16)
 	tileSrc = rl.NewRectangle(0, 0, 16, 16)
 
 	playerSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Characters/Basic Charakter Spritesheet.png")
 
 	playerSrc = rl.NewRectangle(0, 0, 48, 48)
-	playerDest = rl.NewRectangle(200, 200, 100, 100)
+	playerDest = rl.NewRectangle(100, 100, 60, 60)
 
 	cam = rl.NewCamera2D(rl.NewVector2(float32(screenWidth/2), float32(screenHeight/2)),
-		rl.NewVector2(float32(playerDest.X-(playerDest.Width/2)), float32(playerDest.Y-(playerDest.Height/2))), 0.0, 1.8)
+		rl.NewVector2(float32(playerDest.X-(playerDest.Width/2)), float32(playerDest.Y-(playerDest.Height/2))), 0.0, 3)
 
 	loadMap("src/assets/maps/one.map")
 }
