@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"os"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -129,13 +133,43 @@ func render() {
 	rl.EndDrawing()
 }
 
-func loadMap() {
+func loadMap(mapFile string) {
+	file, err := os.ReadFile(mapFile)
+	if err != nil {
+		fmt.Println("the error is: ", err)
+		os.Exit(1)
+	}
+
+	remNewLines := strings.Replace(string(file), "\n", " ", -1)
+	sliced := strings.Split(remNewLines, " ")
+	mapW = -1
+	mapH = -1
+	for i := 0; i < len(sliced); i++ {
+		s, _ := strconv.ParseInt(sliced[i], 10, 64)
+		m := int(s)
+		fmt.Println("m value: ", m)
+		if mapW == -1 {
+			mapW = m
+			fmt.Println("mw is: ", mapW)
+		} else if mapH == -1 {
+			mapH = m
+			fmt.Println("mh is: ", mapH)
+		} else {
+			tileMap = append(tileMap, m)
+		}
+	}
+
+	if len(tileMap) > mapW*mapH {
+		tileMap = tileMap[:len(tileMap)-1]
+	}
+
+	/* for test
 	mapW = 5
 	mapH = 5
 	for i := 0; i < (mapH * mapW); i++ {
 		tileMap = append(tileMap, 1)
 	}
-
+	*/
 }
 
 func initializing() {
@@ -156,7 +190,7 @@ func initializing() {
 	cam = rl.NewCamera2D(rl.NewVector2(float32(screenWidth/2), float32(screenHeight/2)),
 		rl.NewVector2(float32(playerDest.X-(playerDest.Width/2)), float32(playerDest.Y-(playerDest.Height/2))), 0.0, 1.8)
 
-	loadMap()
+	loadMap("src/assets/maps/one.map")
 }
 
 func quit() {
