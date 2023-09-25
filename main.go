@@ -132,9 +132,8 @@ func render() {
 func loadMap() {
 	mapW = 5
 	mapH = 5
-	for i := 0; i < (mapW * mapH); i++ {
+	for i := 0; i < (mapH * mapW); i++ {
 		tileMap = append(tileMap, 1)
-
 	}
 
 }
@@ -146,7 +145,7 @@ func initializing() {
 
 	grassSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Tilesets/Grass.png")
 
-	tileDest = rl.NewRectangle(0, 0, 16, 16)
+	tileDest = rl.NewRectangle(0, 0, 32, 32)
 	tileSrc = rl.NewRectangle(0, 0, 16, 16)
 
 	playerSprite = rl.LoadTexture("src/assets/Sprout Lands - Sprites - Basic pack/Characters/Basic Charakter Spritesheet.png")
@@ -156,6 +155,7 @@ func initializing() {
 
 	cam = rl.NewCamera2D(rl.NewVector2(float32(screenWidth/2), float32(screenHeight/2)),
 		rl.NewVector2(float32(playerDest.X-(playerDest.Width/2)), float32(playerDest.Y-(playerDest.Height/2))), 0.0, 1.8)
+
 	loadMap()
 }
 
